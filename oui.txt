@@ -1,0 +1,18 @@
+###################### TCHAT ######################################
+
+Bienvenue, %s !
+
+Voici la liste des commandes :
+
+- create salon : créer un salon de discussion publique
+
+- list users: Lister les utilisateurs connectés
+- list salons: Lister les salons de discution disponible
+
+- join salon *salon_id* : rejoindre un salon de discussion
+- join user *user_id* : rejoindre un joueur dans un salon privé
+- join world
+
+- exit : Se déconnecter ou revenir en arrière
+
+####################################################################
