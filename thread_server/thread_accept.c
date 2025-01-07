@@ -8,57 +8,51 @@
 #include <netinet/in.h>
 #include <netinet/tcp.h>
 #include <pthread.h>
-#include "recv_thread.c"
+#include <errno.h>
+
 #define NB_CLIENT_MAX 20
 
-long tab_client[NB_CLIENT_MAX];
 int nombre_de_client=0;
+long tab_client[NB_CLIENT_MAX];
 
-void* thread_recv(void* arg){
-    long ID_client = (long)arg;
+
+void * recv_thread(void* arg){
+    int id_client=(int)arg;
     while (1)
     {
-        char reponse_buf[255];memset(reponse_buf,0,255);
-        int check_error=recv(ID_client,reponse_buf,sizeof reponse_buf,0);
-        if (check_error==0||check_error==-1){
-            printf("client[%ld] has left the chat\n",ID_client);
-            close(ID_client);
+        // printf("id client = %d\n",id_client);
+        char tab_recv[1000];memset(tab_recv,0,1000);
+        int check_error = recv(id_client,tab_recv,1000,0);perror("recv_thread()");
+
+        if (check_error == -1 || check_error == 0)
+        {
+            close(id_client);
             for (int i = 0; i < nombre_de_client; i++)
             {
-                if (tab_client[i]==ID_client)
+                if (tab_client[i]==id_client)
                 {
                     tab_client[i]=0;
                 }
-                
             }
-            for (int i = 0; i < NB_CLIENT_MAX; i++)
+            for (int i = 0; i < nombre_de_client; i++)
             {
                 if (tab_client[i]==0)
                 {
                     tab_client[i]=tab_client[i+1];
                     tab_client[i+1]=0;
-                }
-                
+                }   
             }
-            
+
             nombre_de_client--;
-            
             pthread_exit(NULL);           
         }
-        else{
-            printf("Nombre de clients: %d\n",nombre_de_client);
+        else
+        {
+            int client_fd_send=4;
             for (int i = 0; i < nombre_de_client; i++)
             {
-                if (tab_client[i]==ID_client)
-                {
-                    send(tab_client[i],"[OK]\n",6,0);perror("send a l'envoyeur du msg");
-                }  
-                else
-                {
-                    send(tab_client[i],reponse_buf,strlen(reponse_buf),0);perror("send");
-                    printf("envoi effectué à client[%ld]\n",tab_client[i]);
-                }  
-            }
+                send(tab_client[i],tab_recv,sizeof tab_recv,0);
+            }   
         }
     }
 }
@@ -68,12 +62,17 @@ void * thread_accept(void* arg){
 
     while (1)
     {
+        printf("nombre de client au début:%d\n",nombre_de_client);
         struct sockaddr_in client_addr;
         socklen_t len;
         int client_fd = accept(server_fd,(struct sockaddr*)&client_addr,&len);perror("accept");
         if (client_fd==-1) pthread_exit(NULL);
+
+        tab_client[nombre_de_client]=client_fd;
+
+        printf("tab de 0 = %ld\n",tab_client[0]);
         
-        FILE* message = fopen("oui.txt","r");
+        FILE* message = fopen("fichier_text/msg_bienvenue.txt","r");
         fseek(message,0,SEEK_END);
         int taille_fichier = ftell(message);
         fseek(message,0,SEEK_SET);
@@ -83,12 +82,12 @@ void * thread_accept(void* arg){
         fseek(message,0,SEEK_SET);
         fclose(message);
 
+        printf("client[%d] has joined the chat\n",client_fd);
+        
+        pthread_t thread_receive;
+        pthread_create(&thread_receive,NULL,recv_thread,(void*)tab_client[nombre_de_client]); 
         nombre_de_client++;
         printf("nombre de client connecter : %d\n",nombre_de_client);
-        sleep(3);
-        pthread_t thread_receive;
-        pthread_create(&thread_receive,NULL,thread_recv,(void*)tab_client[nombre_de_client]); 
-
     }
     
 

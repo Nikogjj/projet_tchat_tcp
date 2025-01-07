@@ -3,10 +3,10 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-int check_error_start_client(int argc,char **argv,char pseudo[1000],int* port_client){
+int check_error_start_client(int argc,char **argv,char pseudo[100],int* port_client){
     if (argc==1 || argc==2)
     {
-        FILE* error=fopen("error_start_client","r");
+        FILE* error=fopen("fichier_text/error_start_client","r");
         char error_start[1000];memset(error_start,0,1000);
         fread(error_start,1,1000,error);
         printf("%s\n",error_start);

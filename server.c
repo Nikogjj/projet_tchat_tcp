@@ -9,8 +9,8 @@
 #include <netinet/tcp.h>
 #include <pthread.h>
 #include "port.h"
-#include "set_server.c"
-#include "thread_accept.c"
+#include "parametre/set_server.c"
+#include "thread_server/thread_accept.c"
 
 int main(int argc, char** argv){
 
