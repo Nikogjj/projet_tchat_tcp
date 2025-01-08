@@ -16,8 +16,8 @@ int nombre_de_client=0;
 long tab_client[NB_CLIENT_MAX];
 
 
-void * recv_thread(void* arg){
-    int id_client=(int)arg;
+void * recv_thread(void* argument){
+    int id_client=(int)argument;
     while (1)
     {
         // printf("id client = %d\n",id_client);
@@ -51,7 +51,15 @@ void * recv_thread(void* arg){
             int client_fd_send=4;
             for (int i = 0; i < nombre_de_client; i++)
             {
-                send(tab_client[i],tab_recv,sizeof tab_recv,0);
+                if (id_client==tab_client[i])
+                {
+                    
+                }
+                else
+                {
+                    send(tab_client[i],tab_recv,sizeof tab_recv,0);
+                }
+                
             }   
         }
     }
@@ -62,6 +70,7 @@ void * thread_accept(void* arg){
 
     while (1)
     {
+        char pseudo[50];memset(pseudo,0,50);
         printf("nombre de client au début:%d\n",nombre_de_client);
         struct sockaddr_in client_addr;
         socklen_t len;
@@ -69,8 +78,6 @@ void * thread_accept(void* arg){
         if (client_fd==-1) pthread_exit(NULL);
 
         tab_client[nombre_de_client]=client_fd;
-
-        printf("tab de 0 = %ld\n",tab_client[0]);
         
         FILE* message = fopen("fichier_text/msg_bienvenue.txt","r");
         fseek(message,0,SEEK_END);
@@ -82,10 +89,15 @@ void * thread_accept(void* arg){
         fseek(message,0,SEEK_SET);
         fclose(message);
 
+        recv(client_fd,pseudo,sizeof pseudo,0);
+
         printf("client[%d] has joined the chat\n",client_fd);
         
+        char*argument[2];
+        argument[0]=tab_client[nombre_de_client];
+        argument[1]=pseudo;
         pthread_t thread_receive;
-        pthread_create(&thread_receive,NULL,recv_thread,(void*)tab_client[nombre_de_client]); 
+        pthread_create(&thread_receive,NULL,recv_thread,(void*)argument); 
         nombre_de_client++;
         printf("nombre de client connecter : %d\n",nombre_de_client);
     }
@@ -93,4 +105,3 @@ void * thread_accept(void* arg){
 
 
 }
-
