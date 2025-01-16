@@ -146,18 +146,34 @@ void * recv_thread(void* parametre_thread ){
             case LIST:
                 if (strcmp(arg_commande[1],"users")==0)
                 {
+                    char text_list_users[510] = "\nListe des utilisateurs connectés :\n";
+                    FILE* list_des_pseudo = fopen("fichier_text/list_users.txt","w+");
+                    fwrite(text_list_users,strlen(text_list_users),1,list_des_pseudo);
+                    fclose(list_des_pseudo);
+                    char pseudo_list[550];memset(pseudo_list,0,550);
+                    FILE * list_des_pseudos = fopen("fichier_text/list_users.txt","a+");
                     for (int i = 0; i < nombre_de_client; i++)
                     {
+
+                        sprintf(text_list_users,"-%s\n",parametre_thread_recv->clients_body[i].pseudo);
+                        fwrite(text_list_users,strlen(text_list_users),1,list_des_pseudo);
+                        // strcat(text_list_users,"\n");
                         printf("%s\n",parametre_thread_recv->clients_body[i].pseudo);
-                        send(client_fd,parametre_thread_recv->clients_body[i].pseudo,1000,0);perror("send list_users()");// probleme avec la taille du recv(client) exemple : si la taille send du serveur =100 et que le recv client=1000 si ya plusieurs send je ne recois pas tout 
                     }
+                    fseek(list_des_pseudos,0,SEEK_SET);
+                    fread(pseudo_list,sizeof pseudo_list,1,list_des_pseudos);
+                    fclose(list_des_pseudos);
+                    // fflush(stdout);
+                    send(client_fd,pseudo_list,1000,0);perror("send list_users()");// probleme avec la taille du recv(client) exemple : si la taille send du serveur =100 et que le recv client=1000 si ya plusieurs send je ne recois pas tout 
+                    printf("PSEUDO LIST : %s",pseudo_list);
+                    // printf("PSEUDO LIST");
                     
                 }
                 if (strcmp(arg_commande[1],"salons")==0)
                 {
                     for (int i = 0; i < nombre_salon_en_ligne; i++)
                     {
-                        send(client_fd,list_salon[i],1000,0);perror("send list_users()");// probleme avec la taille du recv(client) exemple : si la taille send du serveur =100 et que le recv client=1000 si ya plusieurs send je ne recois pas tout 
+                        send(client_fd,list_salon[i],1000,0);perror("send list_salons()");// probleme avec la taille du recv(client) exemple : si la taille send du serveur =100 et que le recv client=1000 si ya plusieurs send je ne recois pas tout 
                     }
                 }
 
@@ -385,13 +401,7 @@ void * recv_thread(void* parametre_thread ){
                     }   
                 }
             }
-            
         }
-            
-        // else if(parametre_thread_recv->clients_body[real_ID_client].check_menu_or_salon==DANS_UN_SALON_PRIVE)
-        // {
-            
-        // }
     }
 }
 
