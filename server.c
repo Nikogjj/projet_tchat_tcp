@@ -18,7 +18,7 @@ int main(int argc, char** argv){
 
     long server_fd;
     server_fd = set_server(PORT_SERVER,server_fd);
-    if(server_fd == -1)return EXIT_FAILURE;
+    if(server_fd == -1)return EXIT_FAILURE;    
 
     pthread_t thread;
     pthread_create(&thread,NULL,thread_accept,(void*)server_fd);
