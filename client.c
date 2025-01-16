@@ -62,14 +62,14 @@ int main(int argc,char **argv){
     if(check_error==-1)return EXIT_FAILURE;
 
     printf("%s",tab_recv);
-    char tab_commande[TAILLE_MAX_COMMANDE];memset(tab_commande,0,TAILLE_MAX_COMMANDE);
-    fgets(tab_commande,TAILLE_MAX_COMMANDE,stdin);
-
 
     pthread_t thread_snd;
     pthread_t thread_rcv;
     pthread_create(&thread_snd,NULL,thread_send,(void*) client_fd);
     pthread_create(&thread_rcv,NULL,thread_recv,(void*) client_fd);
+
+    // char tab_commande[TAILLE_MAX_COMMANDE];memset(tab_commande,0,TAILLE_MAX_COMMANDE);
+    // fgets(tab_commande,TAILLE_MAX_COMMANDE,stdin);
 
     pthread_join(thread_rcv,NULL);
 
