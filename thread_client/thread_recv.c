@@ -10,24 +10,41 @@
 #include <pthread.h>
 
 #define TAILLE_TAB_RECV 1000
+#define MSG_DECO "code_45421354"
 
 void * thread_recv(void *arg){
-    while(1){
+    struct parametre_thread_snd_thread
+    {
+        long client_fd;
+        char pseudo[100];
+    }typedef t_parametre_snd_thread;
+    // long client_fd = (long) arg;
+    t_parametre_snd_thread *client;
+    client=arg;
+    
         // printf("oui");
         // fflush(stdout);
-        long client_fd=(long) arg;
+        // long client_fd=(long) arg;
+    while(1){
+        // printf("CLIENT FD = %ld",client_fd);
         char tab_recv[TAILLE_TAB_RECV];memset(tab_recv,0,TAILLE_TAB_RECV);
-        int check_error = recv (client_fd,tab_recv,TAILLE_TAB_RECV,0);
+        int check_error = recv (client->client_fd,tab_recv,TAILLE_TAB_RECV,0);
         if (check_error==0 || check_error == -1) return (void*)EXIT_FAILURE;
-        if (strcmp(tab_recv,"code_45421354")==0)
+        if (strcmp(tab_recv,MSG_DECO)==0)
         {
-            send(client_fd,"code_45421354",14,0);perror("send deconnection ()");
+            send(client->client_fd,MSG_DECO,strlen(MSG_DECO),0);perror("send deconnection ()");
         }
-        else
+        else if (strcmp(tab_recv,"\nVous vous êtes deconnecté\n")==0)
         {
-            printf("%s\n",tab_recv);
+            printf("owwwwwwwwwwwwwwwwwww\n");
+            pthread_exit(NULL);
         }
         
+        else
+        {
+            printf("%s",tab_recv);
+        }
+        fflush(stdout);
     
     }
     pthread_exit(NULL);
