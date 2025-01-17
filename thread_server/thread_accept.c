@@ -17,6 +17,8 @@
 #define DANS_LE_MENU 0
 #define DANS_UN_SALON 1
 #define DANS_UN_SALON_PRIVE 2
+#define DECONNECTION -2
+#define ERROR -1
 #define CREATE 1
 #define LIST 2
 #define JOIN 3
@@ -132,18 +134,46 @@ void * recv_thread(void* parametre_thread ){
         {
             printf("dans le if\n");
             int nombre_de_mot = get_nombre_de_mot(tab_recv);
+            if (nombre_de_mot==ERROR)
+            {
+                send(client_fd,"Veuillez entrer une commande valide.\n",47,0);
+                continue;
+            }
+            
             char* arg_commande[nombre_de_mot];
             switch (check_commande(tab_recv,arg_commande,nombre_de_mot))
             {
             case CREATE:
-                strcpy(list_salon[nombre_salon_en_ligne],arg_commande[2]);
-                nombre_salon_en_ligne++;
-                char msg_reaction_serveur[255];memset(msg_reaction_serveur,0,255);
-                sprintf(msg_reaction_serveur,"Salon %s créé ! Vous pouvez dès à présent le rejoindre.\n",arg_commande[2]);
-                send(client_fd,msg_reaction_serveur,sizeof msg_reaction_serveur,0);
-                break;
-
+                if (nombre_de_mot!=3)
+                {
+                    send(client_fd,"Mauvaise commande. Entrez la commande suivante : \"create salon *salon_id*\"\n",76,0);
+                    continue;
+                }
+                if (strcmp(arg_commande[1],"salon")==0)
+                {
+                    strcpy(list_salon[nombre_salon_en_ligne],arg_commande[2]);
+                    nombre_salon_en_ligne++;
+                    char msg_reaction_serveur[255];memset(msg_reaction_serveur,0,255);
+                    sprintf(msg_reaction_serveur,"\nSalon %s créé ! Vous pouvez dès à présent le rejoindre.\n\n",arg_commande[2]);
+                    send(client_fd,msg_reaction_serveur,strlen(msg_reaction_serveur),0);
+                    break;
+                }
+                else{
+                    send(client_fd,"Mauvaise commande. Entrez la commande suivante : \"create salon *salon_id*\"\n",76,0);
+                    continue;
+                }
             case LIST:
+                if (nombre_de_mot==1)
+                {
+                    send(client_fd,"Mauvaise commande. Entrez la commande suivante : \"list users\" ou \"list salons\"\n",80,0);
+                    continue;
+                }
+                if (nombre_de_mot>2)
+                {
+                    send(client_fd,"Mauvaise commande. Entrez la commande suivante : \"list users\" ou \"list salons\"\n",80,0);
+                    continue;
+                }
+                
                 if (strcmp(arg_commande[1],"users")==0)
                 {
                     char text_list_users[510] = "\nListe des utilisateurs connectés :\n";
@@ -159,32 +189,67 @@ void * recv_thread(void* parametre_thread ){
                         fwrite(text_list_users,strlen(text_list_users),1,list_des_pseudo);
                         // strcat(text_list_users,"\n");
                         printf("%s\n",parametre_thread_recv->clients_body[i].pseudo);
+                    // fflush(stdout);
                     }
                     fseek(list_des_pseudos,0,SEEK_SET);
                     fread(pseudo_list,sizeof pseudo_list,1,list_des_pseudos);
-                    fclose(list_des_pseudos);
-                    // fflush(stdout);
+                    // strcpy(text_list_users,"<");
+                    strcat(pseudo_list,"\n");
+                    // strcat(pseudo_list,parametre_thread_recv->clients_body[real_ID_client].pseudo);
+                    // strcpy(text_list_users,"> : ");
+                    // strcat(pseudo_list,text_list_users);
+                    // pseudo_list[strlen(pseudo_list)-1]=0;
                     send(client_fd,pseudo_list,1000,0);perror("send list_users()");// probleme avec la taille du recv(client) exemple : si la taille send du serveur =100 et que le recv client=1000 si ya plusieurs send je ne recois pas tout 
                     printf("PSEUDO LIST : %s",pseudo_list);
                     // printf("PSEUDO LIST");
                     
                 }
-                if (strcmp(arg_commande[1],"salons")==0)
+                else if (strcmp(arg_commande[1],"salons")==0)
                 {
+                    char text_list_salons[510] = "\nListe des salons existants :\n-world\n";
+                    FILE* list_des_salon = fopen("fichier_text/list_salons.txt","w+");
+                    fwrite(text_list_salons,strlen(text_list_salons),1,list_des_salon);
+                    fclose(list_des_salon);
+                    char salons_list[550];memset(salons_list,0,550);
+                    list_des_salon = fopen("fichier_text/list_salons.txt","a+");
                     for (int i = 0; i < nombre_salon_en_ligne; i++)
                     {
-                        send(client_fd,list_salon[i],1000,0);perror("send list_salons()");// probleme avec la taille du recv(client) exemple : si la taille send du serveur =100 et que le recv client=1000 si ya plusieurs send je ne recois pas tout 
+
+                        sprintf(text_list_salons,"-%s\n",list_salon[i]);
+                        fwrite(text_list_salons,strlen(text_list_salons),1,list_des_salon);
+                        // strcat(text_list_users,"\n");
+                        printf("%s\n",list_salon[i]);
+                        // fflush(stdout);
                     }
+                    fseek(list_des_salon,0,SEEK_SET);
+                    fread(salons_list,sizeof salons_list,1,list_des_salon);
+                    // strcpy(text_list_users,"<");
+                    strcat(salons_list,"\n");
+                    // strcat(pseudo_list,parametre_thread_recv->clients_body[real_ID_client].pseudo);
+                    // strcpy(text_list_users,"> : ");
+                    // strcat(pseudo_list,text_list_users);
+                    // pseudo_list[strlen(pseudo_list)-1]=0;
+                    send(client_fd,salons_list,1000,0);perror("send list_users()");// probleme avec la taille du recv(client) exemple : si la taille send du serveur =100 et que le recv client=1000 si ya plusieurs send je ne recois pas tout 
+                    printf("SALON LIST : %s",salons_list);
+                    // printf("PSEUDO LIST");
+                }
+                else{
+                    send(client_fd,"Mauvaise commande. Entrez la commande suivante : \"list users\" ou \"list salons\"\n",80,0);
                 }
 
                 break;
 
             case JOIN:
+                if (nombre_de_mot>3)
+                {
+                    send(client_fd,"Mauvaise commande. Entrez la commande suivante : \"join user *user_id\", \"join salon *salon_id*\" ou \"join world\" \"\n",114,0);
+                }
+                
                 if (strcmp(arg_commande[1],"user")==0)
                 {
                     if (parametre_thread_recv->clients_body[real_ID_client].nombre_dinvitation_prive==0)
                     {
-                        send(client_fd,"Vous n'avez aucune invitation pour un salon privé actuellement\n",66,0);
+                        send(client_fd,"Vous n'avez aucune invitation pour un salon privé actuellement\n",74,0);
                     }
                     else if (parametre_thread_recv->clients_body[real_ID_client].nombre_dinvitation_prive!=0)
                     {
@@ -225,16 +290,16 @@ void * recv_thread(void* parametre_thread ){
                         }
                         else
                         {
-                            send(client_fd,"Le pseudo de cette utilisateur n'existe pas ou n'est plus en ligne\n",68,0);
+                            send(client_fd,"Le pseudo de cette utilisateur n'existe pas ou n'est plus en ligne\n",77,0);
                         }
                     } 
                 }
-                if(strcmp(arg_commande[1],"salon")==0)
+                else if(strcmp(arg_commande[1],"salon")==0)
                 {
                     int check_salon_exist=0;
                     if (parametre_thread_recv->clients_body[real_ID_client].check_menu_or_salon==DANS_UN_SALON)
                     {
-                        send(client_fd,"\nVous êtes déjà dans un salon.\nVeuillez quitter ce salon pour en rejoindre un autre\n\n",89,0);
+                        send(client_fd,"\n\nVous êtes déjà dans un salon.\nVeuillez quitter ce salon pour en rejoindre un autre\n\n",90,0);
                     }
                     else{
                         for (int i = 0; i < nombre_salon_en_ligne; i++)
@@ -249,18 +314,37 @@ void * recv_thread(void* parametre_thread ){
                         }
                         if (check_salon_exist==0)
                         {
-                            send(client_fd,"Le salon n'existe pas\n",23,0);
+                            send(client_fd,"Le salon n'existe pas\n",32,0);
                         }
-                    }
-                    
+                        else if (check_salon_exist==1)
+                        {
+                            char msg_send[100];memset(msg_send,0,100);
+                            sprintf(msg_send,"\nVous avez rejoins le salon %s. Tapez \"exit\" pour quitter ce salon et revenir au menu\n\n",arg_commande[2]);
+                            send(client_fd,msg_send,strlen(msg_send),0);
+                        }
+                        
+                    }   
                 }
                 else if (strcmp(arg_commande[1],"world")==0)
                 {
                     strcpy(parametre_thread_recv->clients_body[real_ID_client].nom_salon,"world");
                     parametre_thread_recv->clients_body[real_ID_client].check_menu_or_salon=DANS_UN_SALON;
                 }
+                else{
+                    send(client_fd,"Mauvaise commande. Entrez la commande suivante : \"join user *user_id\", \"join salon *salon_id*\" ou \"join world\" \"\n",114,0);
+                }
                 break;
             case INVITE:
+                if (nombre_de_mot>3)
+                {
+                    send(client_fd,"Mauvaise commande. Entrez la commande suivante : \"invite user *user_id*\"\n",114,0);
+                    continue;
+                }
+                if (nombre_de_mot==1)
+                {
+                    send(client_fd,"Mauvaise commande. Entrez la commande suivante : \"invite user *user_id*\"\n",114,0);
+                    continue;
+                }
                 if (strcmp(arg_commande[1],"user")==0)
                 {
                     int check_client_exist=0;
@@ -293,7 +377,7 @@ void * recv_thread(void* parametre_thread ){
                             send(parametre_thread_recv->clients_body[index_client_to_join].client_fd,send_invite_private,strlen(send_invite_private),0);
 
                             char send_notification_private[2000];memset(send_invite_private,0,2000);
-                            sprintf(send_invite_private,"Vous êtes maintenant dans votre salon privé en attente de %s. Tapez exit pour sortir de votre salon privé et en rejoindre un autre",parametre_thread_recv->clients_body[index_client_to_join].pseudo);
+                            sprintf(send_invite_private,"Vous êtes maintenant dans votre salon privé en attente de %s. Tapez exit pour sortir de votre salon privé et en rejoindre un autre\n",parametre_thread_recv->clients_body[index_client_to_join].pseudo);
                             send(client_fd,send_invite_private,strlen(send_invite_private),0);
                         }
                         else if (parametre_thread_recv->clients_body[index_client_to_join].check_menu_or_salon==DANS_UN_SALON)
@@ -311,25 +395,19 @@ void * recv_thread(void* parametre_thread ){
                             send(parametre_thread_recv->clients_body[index_client_to_join].client_fd,send_invite_private,strlen(send_invite_private),0);
 
                             char send_notification_private[2000];memset(send_invite_private,0,2000);
-                            sprintf(send_invite_private,"Vous êtes maintenant dans votre salon privé en attente de %s. Tapez exit pour sortir de votre salon privé et en rejoindre un autre",parametre_thread_recv->clients_body[index_client_to_join].pseudo);
+                            sprintf(send_invite_private,"Vous êtes maintenant dans votre salon privé en attente de %s. Tapez exit pour sortir de votre salon privé et en rejoindre un autre\n",parametre_thread_recv->clients_body[index_client_to_join].pseudo);
                             send(client_fd,send_invite_private,strlen(send_invite_private),0);
-                        }
-                        
-                        
-                        
+                        }   
                     }
                     else
                     {
-                        send(client_fd,"Le pseudo de cette utilisateur n'existe pas ou n'est plus en ligne\n",68,0);
+                        send(client_fd,"Le pseudo de cette utilisateur n'existe pas ou n'est plus en ligne\n",77,0);
                     }
-                    
-                    
                 }
                 else
                 {
-                    send(client_fd,"Mauvaise commande. Entrez la commande suivante : invite user *user_name*\n",74,0);
+                    send(client_fd,"Mauvaise commande. Entrez la commande suivante : invite user *user_name*\n",83,0);
                 }
-
                 break;
             case EXIT:
                 send(client_fd,"\nVous vous êtes deconnecté\n",30,0);
@@ -372,7 +450,14 @@ void * recv_thread(void* parametre_thread ){
                 pthread_exit(NULL);           
                     
                 break;
+            case ERROR:
+                send(client_fd,"Veuillez entrer une commande valide\n",46,0);
+                break;            
+            case DECONNECTION:
+                
+                break;
             default:
+            
                 break;
             }
         }
@@ -384,8 +469,11 @@ void * recv_thread(void* parametre_thread ){
                 memset(parametre_thread_recv->clients_body[real_ID_client].nom_salon,0,50);
             }
             else{
-
-                tab_recv[strlen(tab_recv)-1]=0;
+                char msg_send[2000];memset(msg_send,0,2000);
+                // tab_recv[strlen(tab_recv)-1]=0;
+                sprintf(msg_send,"<%s> : %s",parametre_thread_recv->clients_body[real_ID_client].pseudo,tab_recv);
+                // strcat(msg_send,parametre_thread_recv->clients_body[real_ID_client].pseudo);
+                // strcat(msg_send,tab_recv);
                 for (int i = 0; i < nombre_de_client; i++)
                 {
                     if (strcmp(parametre_thread_recv->clients_body[real_ID_client].nom_salon,parametre_thread_recv->clients_body[i].nom_salon)==0)
@@ -396,7 +484,7 @@ void * recv_thread(void* parametre_thread ){
                         }
                         else
                         {
-                            send(parametre_thread_recv->clients_body[i].client_fd,tab_recv,strlen(tab_recv),0);perror("send msg()");
+                            send(parametre_thread_recv->clients_body[i].client_fd,msg_send,strlen(msg_send),0);perror("send msg()");
                         }
                     }   
                 }

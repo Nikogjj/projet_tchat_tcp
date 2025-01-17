@@ -7,7 +7,16 @@
 int check_commande(char* commande,char**arg_commande,int nombre_de_mot){
     // int nombre_de_mot=get_nombre_de_mot(commande);
 
-    // commande[strlen(commande)-1]=0;
+    commande[strlen(commande)-1]=0;
+    printf("COMMANDE : \"%s\"\n",commande);
+    printf("NOMBRE DE MOT : %d\n",nombre_de_mot);
+    if (strcmp(commande,"code_45421354")==0)
+    {
+        printf("ouiouioiuoiuoiuoiuoi\n");
+        return -2;
+    }
+    
+    
     arg_commande[0]=strtok(commande," ");
     for (int i = 1; i < nombre_de_mot; i++)
     {
