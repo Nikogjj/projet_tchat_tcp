@@ -1,6 +1,3 @@
-###################### TCHAT ######################################
-
-Bienvenue, %s !
 
 Voici la liste des commandes :
 
@@ -14,8 +11,6 @@ Voici la liste des commandes :
 - "invite user *user_id*" : inviter un joueur dans un salon privé
 - "join user *user_id*" : rejoindre un joueur dans un salon privé
 
-- "command" : pour afficher la liste des commandes a taper
+- "command" : pour afficher la liste des commandes a taper 
 - "exit" : se déconnecter ou revenir en arrière
-
-####################################################################
 
