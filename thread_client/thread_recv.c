@@ -32,7 +32,7 @@ void * thread_recv(void *arg){
         if (check_error==0 || check_error == -1) return (void*)EXIT_FAILURE;
         if (strcmp(tab_recv,MSG_DECO)==0)
         {
-            send(client->client_fd,MSG_DECO,strlen(MSG_DECO),0);perror("send deconnection ()");
+            send(client->client_fd,MSG_DECO,strlen(MSG_DECO),0);//perror("send deconnection ()");
         }
         else if (strcmp(tab_recv,"\nVous vous êtes deconnecté\n")==0)
         {

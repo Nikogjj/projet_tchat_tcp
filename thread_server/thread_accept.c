@@ -137,7 +137,7 @@ void * recv_thread(void* parametre_thread ){
             int nombre_de_mot = get_nombre_de_mot(tab_recv);
             if (nombre_de_mot==ERROR)
             {
-                send(client_fd,"<SERVER> : Veuillez entrer une commande valide.\n",49,0);
+                send(client_fd,"<SERVER> : Veuillez entrer une commande valide okkkkkk.\n",57,0);
                 continue;
             }
             
@@ -257,6 +257,7 @@ void * recv_thread(void* parametre_thread ){
                         int check_if_client_exist_in_list=0;
                         char pseudo_client_to_join[50];memset(pseudo_client_to_join,0,50);
                         int index_client_to_join;
+                        int index_client_in_tab_invite;
                         for (int i = 0; i < parametre_thread_recv->clients_body[real_ID_client].nombre_dinvitation_prive; i++)
                         {
                             if (strcmp(parametre_thread_recv->clients_body[real_ID_client].list_invite_private[i],arg_commande[2])==0)
@@ -264,12 +265,13 @@ void * recv_thread(void* parametre_thread ){
                                 check_if_client_exist_in_list++;
                                 // strcpy(pseudo_client_to_join,parametre_thread_recv->clients_body[i].pseudo);
                                 // index_client_to_join=i;
+                                index_client_in_tab_invite=i;
                             }
                         }
                         if (check_if_client_exist_in_list==1)
                         {
                             strcpy(parametre_thread_recv->clients_body[real_ID_client].nom_salon,arg_commande[2]);
-                            parametre_thread_recv->clients_body[real_ID_client].check_menu_or_salon=DANS_UN_SALON;
+                            parametre_thread_recv->clients_body[real_ID_client].check_menu_or_salon=DANS_UN_SALON_PRIVE;
                             for (int i = 0; i < parametre_thread_recv->clients_body[real_ID_client].nombre_dinvitation_prive; i++)
                             {
                                 if (strcmp(arg_commande[2],parametre_thread_recv->clients_body[real_ID_client].list_invite_private[i])==0)
@@ -391,7 +393,7 @@ void * recv_thread(void* parametre_thread ){
                             strcpy(parametre_thread_recv->clients_body[index_client_to_join].list_invite_private[index_invitation_prive],parametre_thread_recv->clients_body[real_ID_client].pseudo);
                             printf("creation d'invitation : \"%s\" à %s\n",parametre_thread_recv->clients_body[index_client_to_join].list_invite_private[index_invitation_prive],parametre_thread_recv->clients_body[index_client_to_join].pseudo);
 
-                            parametre_thread_recv->clients_body[real_ID_client].check_menu_or_salon=DANS_UN_SALON;
+                            parametre_thread_recv->clients_body[real_ID_client].check_menu_or_salon=DANS_UN_SALON_PRIVE;
                             strcpy(parametre_thread_recv->clients_body[real_ID_client].nom_salon,parametre_thread_recv->clients_body[real_ID_client].pseudo);
                             
                             char send_invite_private[2000];memset(send_invite_private,0,2000);
@@ -409,7 +411,7 @@ void * recv_thread(void* parametre_thread ){
                             // parametre_thread_recv->clients_body[index_client_to_join].check_if_client_is_invited=INVITED;
                             strcpy(parametre_thread_recv->clients_body[index_client_to_join].list_invite_private[index_invitation_prive],parametre_thread_recv->clients_body[real_ID_client].pseudo);
                             printf("creation d'invitation : \"%s\" à %s\n",parametre_thread_recv->clients_body[index_client_to_join].list_invite_private[index_invitation_prive],parametre_thread_recv->clients_body[index_client_to_join].pseudo);
-                            parametre_thread_recv->clients_body[real_ID_client].check_menu_or_salon=DANS_UN_SALON;
+                            parametre_thread_recv->clients_body[real_ID_client].check_menu_or_salon=DANS_UN_SALON_PRIVE;
                             strcpy(parametre_thread_recv->clients_body[real_ID_client].nom_salon,parametre_thread_recv->clients_body[real_ID_client].pseudo);
                         
                             char send_invite_private[2000];memset(send_invite_private,0,2000);
@@ -492,17 +494,17 @@ void * recv_thread(void* parametre_thread ){
             
                 break;
             case ERROR:
-                send(client_fd,"<SERVER> : Veuillez entrer une commande valide\n",48,0);
+                send(client_fd,"<SERVER> : Veuillez entrer une commande valide nooooooon\n",58,0);
                 break;            
             case DECONNECTION:
-                
+                printf("okkkkkk\n");
                 break;
             default:
             
                 break;
             }
         }
-        else if(parametre_thread_recv->clients_body[real_ID_client].check_menu_or_salon==DANS_UN_SALON || parametre_thread_recv->clients_body[real_ID_client].check_menu_or_salon==DANS_UN_SALON_PRIVE)
+        else if(parametre_thread_recv->clients_body[real_ID_client].check_menu_or_salon==DANS_UN_SALON)
         {
             if (strcmp(tab_recv,"exit\n")==0)
             {
@@ -542,6 +544,96 @@ void * recv_thread(void* parametre_thread ){
                 }
             }
         }
+        else if (parametre_thread_recv->clients_body[real_ID_client].check_menu_or_salon==DANS_UN_SALON_PRIVE)
+        {
+            int index_client_joined;
+            if (strcmp(tab_recv,"exit\n")==0){
+                for (int i = 0; i < nombre_de_client; i++)
+                {
+                    if (strcmp(parametre_thread_recv->clients_body[real_ID_client].nom_salon,parametre_thread_recv->clients_body[i].pseudo)==0)
+                    {
+                        index_client_joined=i;
+                    }
+                }
+                int check_if_client_is_in_list=-1;
+                for (int i = 0; i < parametre_thread_recv->clients_body[index_client_joined].nombre_dinvitation_prive; i++)
+                {
+                    if (strcmp(parametre_thread_recv->clients_body[real_ID_client].pseudo,parametre_thread_recv->clients_body[index_client_joined].list_invite_private[i])==0)
+                    {
+                        check_if_client_is_in_list=i;
+                    }
+                    
+                }
+                
+                if (strcmp(parametre_thread_recv->clients_body[index_client_joined].nom_salon,parametre_thread_recv->clients_body[real_ID_client].nom_salon)!=0)
+                {
+                    if (check_if_client_is_in_list!=-1)
+                    {
+                        char msg_send[2000];memset(msg_send,0,2000);
+                        sprintf(msg_send,"<SERVER> : %s a annulé son invitation a rejoindre son salon privé, vous ne pouvez plus le rejoindre.\n",parametre_thread_recv->clients_body[real_ID_client].pseudo);
+                        send(parametre_thread_recv->clients_body[index_client_joined].client_fd,msg_send,strlen(msg_send),0);
+
+                        for (int i = 0; i < parametre_thread_recv->clients_body[index_client_joined].nombre_dinvitation_prive; i++)
+                        {
+                            if (strcmp(parametre_thread_recv->clients_body[real_ID_client].pseudo,parametre_thread_recv->clients_body[index_client_joined].list_invite_private[i])==0)
+                            {
+                                strcpy(parametre_thread_recv->clients_body[index_client_joined].list_invite_private[i],parametre_thread_recv->clients_body[index_client_joined].list_invite_private[i+1]);   
+                            }
+                            if (i==parametre_thread_recv->clients_body[index_client_joined].nombre_dinvitation_prive-1)
+                            {
+                                memset(parametre_thread_recv->clients_body[index_client_joined].list_invite_private[i],0,500);
+                            }
+                            if (strcmp(parametre_thread_recv->clients_body[index_client_joined].list_invite_private[i],parametre_thread_recv->clients_body[index_client_joined].list_invite_private[i-1])==0)
+                            {
+                                strcpy(parametre_thread_recv->clients_body[index_client_joined].list_invite_private[i],parametre_thread_recv->clients_body[index_client_joined].list_invite_private[i+1]);   
+                            }
+                        }
+                        
+                        parametre_thread_recv->clients_body[index_client_joined].nombre_dinvitation_prive--;
+                        
+                    }
+                    else{
+
+                    }
+                }
+
+                parametre_thread_recv->clients_body[real_ID_client].check_menu_or_salon=DANS_LE_MENU;
+                char msg_send[2000];memset(msg_send,0,2000);
+                sprintf(msg_send,"<SERVER> : %s a quitté le salon privé de %s. Quittez le salon a votre tour pour pouvoir en rejoindre un autre\n",parametre_thread_recv->clients_body[real_ID_client].pseudo,parametre_thread_recv->clients_body[real_ID_client].nom_salon);
+                for (int i = 0; i < nombre_de_client; i++)
+                {
+                    if (strcmp(parametre_thread_recv->clients_body[real_ID_client].nom_salon,parametre_thread_recv->clients_body[i].nom_salon)==0 && strcmp(parametre_thread_recv->clients_body[i].pseudo,parametre_thread_recv->clients_body[real_ID_client].pseudo)!=0)
+                    {
+                        send(parametre_thread_recv->clients_body[i].client_fd,msg_send,strlen(msg_send),0);
+                    }
+                    
+                }
+                memset(parametre_thread_recv->clients_body[real_ID_client].nom_salon,0,50);
+            }
+
+            else{
+                char msg_send[2000];memset(msg_send,0,2000);
+                // tab_recv[strlen(tab_recv)-1]=0;
+                sprintf(msg_send,"<%s> : %s",parametre_thread_recv->clients_body[real_ID_client].pseudo,tab_recv);
+                // strcat(msg_send,parametre_thread_recv->clients_body[real_ID_client].pseudo);
+                // strcat(msg_send,tab_recv);
+                for (int i = 0; i < nombre_de_client; i++)
+                {
+                    if (strcmp(parametre_thread_recv->clients_body[real_ID_client].nom_salon,parametre_thread_recv->clients_body[i].nom_salon)==0)
+                    {
+                        if (client_fd==parametre_thread_recv->clients_body[i].client_fd)
+                        {
+                        
+                        }
+                        else
+                        {
+                            send(parametre_thread_recv->clients_body[i].client_fd,msg_send,strlen(msg_send),0);perror("send msg()");
+                        }
+                    }   
+                }
+            }
+        }
+        
     }
 }
 
