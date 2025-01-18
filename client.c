@@ -34,9 +34,9 @@ int main(int argc,char **argv){
     t_parametre_snd client;// peut etre erreur juste la ligne d'en bas avec client.pseudo
     t_parametre_snd* client_p=malloc(sizeof client);
     strcpy(client_p->pseudo,argv[2]);
-    printf("PSEUDO DANS MAIN %s\n",client_p->pseudo);
-    printf("ADRESSE DANS LE MAIN %p\n",client_p);
-    printf("TAILEEEEEEEEEEEE %ld\n",sizeof client);
+    // printf("PSEUDO DANS MAIN %s\n",client_p->pseudo);
+    // printf("ADRESSE DANS LE MAIN %p\n",client_p);
+    // printf("TAILEEEEEEEEEEEE %ld\n",sizeof client);
     int check_error = check_error_start_client(argc,argv,client_p->pseudo,&port_client);
     if(check_error==-1)return EXIT_FAILURE;
     // printf("port client sur le main %d\n",port_client);
@@ -55,20 +55,20 @@ int main(int argc,char **argv){
 
     socklen_t len;
 
-    client_p->client_fd= socket(AF_INET,SOCK_STREAM,0);perror("socket");
+    client_p->client_fd= socket(AF_INET,SOCK_STREAM,0);//perror("socket");
     if(client_p->client_fd==-1)return EXIT_FAILURE;
 
-    printf("CLIENT FD %ld",client_p->client_fd);
-    check_error=bind(client_p->client_fd,(struct sockaddr*)&client_addr,sizeof client_addr);perror("bind");
+    // printf("CLIENT FD %ld",client_p->client_fd);
+    check_error=bind(client_p->client_fd,(struct sockaddr*)&client_addr,sizeof client_addr);//perror("bind");
     if(check_error==-1)return EXIT_FAILURE;
 
 
-    check_error=connect(client_p->client_fd,(struct sockaddr*)&serveur_addr,sizeof serveur_addr);perror("connect");
+    check_error=connect(client_p->client_fd,(struct sockaddr*)&serveur_addr,sizeof serveur_addr);//perror("connect");
     if(check_error==-1)return EXIT_FAILURE;
 
     char tab_recv[TAILLE_TAB_RECV];memset(tab_recv,0,TAILLE_TAB_RECV);
 
-    send(client_p->client_fd,client_p->pseudo,sizeof client_p->pseudo,0);perror("send_pseudo()");
+    send(client_p->client_fd,client_p->pseudo,sizeof client_p->pseudo,0);//perror("send_pseudo()");
 
     check_error = recv(client_p->client_fd,tab_recv,TAILLE_TAB_RECV,0);
     if(check_error==-1)return EXIT_FAILURE;

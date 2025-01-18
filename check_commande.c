@@ -45,6 +45,11 @@ int check_commande(char* commande,char**arg_commande,int nombre_de_mot){
     {
         return 5;
     }
+    else if (strcmp(arg_commande[0],"command")==0)
+    {
+        return 6;
+    }
+    
     else
     {
         return -1;
