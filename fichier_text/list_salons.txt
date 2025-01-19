@@ -1,3 +1,4 @@
 
 Liste des salons existants :
 -world
+-moi
