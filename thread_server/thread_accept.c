@@ -11,6 +11,7 @@
 #include <errno.h>
 #include "../get_nombre_de_mot.c"
 #include "../check_commande.c"
+#include "../check_command_deconnexion.c"
 
 #define NB_CLIENT_MAX 20
 #define NB_SALON_MAX 50
@@ -87,7 +88,21 @@ void * recv_thread(void* parametre_thread ){
                     }
                     else
                     {
-                        send(parametre_thread_recv->clients_body[i].client_fd,"code_45421354",14,0);perror("send deconnection()");
+                        if (parametre_thread_recv->clients_body[real_ID_client].check_menu_or_salon==DANS_UN_SALON_PRIVE)
+                        {
+                            if (strcmp(parametre_thread_recv->clients_body[real_ID_client].nom_salon,parametre_thread_recv->clients_body[i].nom_salon)==0)
+                            {
+                                char msg_send[2000];memset(msg_send,0,2000);
+                                sprintf(msg_send,"<SERVER> : %s a quitté le salon %s.\n",parametre_thread_recv->clients_body[real_ID_client].pseudo,parametre_thread_recv->clients_body[real_ID_client].nom_salon);
+                                send(parametre_thread_recv->clients_body[i].client_fd,msg_send,strlen(msg_send),0);
+                            }
+                            
+                        }
+                        char msg_send[2000];memset(msg_send,0,2000);// FAIRE LE INTEGER TO ASCII
+                        sprintf(msg_send,"code_45421354 %d ",real_ID_client);
+                        printf("MSG SEND : %s",msg_send);
+                        send(parametre_thread_recv->clients_body[i].client_fd,msg_send,strlen(msg_send),0);perror("send deconnection()");
+                        
                     }
                 }
             for (int i = 0; i < nombre_de_client; i++)
@@ -116,9 +131,18 @@ void * recv_thread(void* parametre_thread ){
             pthread_exit(NULL);           
         }
 
-        if (strcmp(tab_recv,"code_45421354")==0)
+        if (strstr(tab_recv,"code_45421354")!=NULL)
         {
-            real_ID_client--;
+            printf("le if a marché\n");
+            
+            int ID_client_disconnected = check_commande_deconnexion(tab_recv);
+            printf("ID client disconnected dans le main %d\n",ID_client_disconnected);
+            if (real_ID_client>ID_client_disconnected)
+            {
+                real_ID_client--;
+            }
+            printf("REAL ID CLIENT de %s = %d\n",parametre_thread_recv->clients_body[real_ID_client].pseudo,real_ID_client);
+            continue;
         }
         
         if (parametre_thread_recv->clients_body[real_ID_client].check_menu_or_salon==DANS_UN_SALON)
@@ -391,7 +415,7 @@ void * recv_thread(void* parametre_thread ){
                             strcpy(parametre_thread_recv->clients_body[index_client_to_join].list_invite_private[index_invitation_prive],parametre_thread_recv->clients_body[real_ID_client].pseudo);
                             printf("creation d'invitation : \"%s\" à %s\n",parametre_thread_recv->clients_body[index_client_to_join].list_invite_private[index_invitation_prive],parametre_thread_recv->clients_body[index_client_to_join].pseudo);
 
-                            parametre_thread_recv->clients_body[real_ID_client].check_menu_or_salon=DANS_UN_SALON;
+                            parametre_thread_recv->clients_body[real_ID_client].check_menu_or_salon=DANS_UN_SALON_PRIVE;
                             strcpy(parametre_thread_recv->clients_body[real_ID_client].nom_salon,parametre_thread_recv->clients_body[real_ID_client].pseudo);
                             
                             char send_invite_private[2000];memset(send_invite_private,0,2000);
@@ -442,7 +466,9 @@ void * recv_thread(void* parametre_thread ){
                     }
                     else
                     {
-                        send(parametre_thread_recv->clients_body[i].client_fd,"code_45421354",14,0);perror("send deconnection()");
+                        char msg_send[2000];memset(msg_send,0,2000);// FAIRE LE INTEGER TO ASCII
+                        sprintf(msg_send,"code_45421354 %d ",real_ID_client);
+                        send(parametre_thread_recv->clients_body[i].client_fd,msg_send,strlen(msg_send),0);perror("send deconnection()");
                     }
                 }
 
