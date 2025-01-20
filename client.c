@@ -30,16 +30,14 @@ int main(int argc,char **argv){
 
     int port_client = 4000;
 
-    // char pseudo[100];memset(pseudo,0,100);
-    t_parametre_snd client;// peut etre erreur juste la ligne d'en bas avec client.pseudo
+
+    t_parametre_snd client;
     t_parametre_snd* client_p=malloc(sizeof client);
     strcpy(client_p->pseudo,argv[2]);
-    // printf("PSEUDO DANS MAIN %s\n",client_p->pseudo);
-    // printf("ADRESSE DANS LE MAIN %p\n",client_p);
-    // printf("TAILEEEEEEEEEEEE %ld\n",sizeof client);
+
     int check_error = check_error_start_client(argc,argv,client_p->pseudo,&port_client);
     if(check_error==-1)return EXIT_FAILURE;
-    // printf("port client sur le main %d\n",port_client);
+
 
     struct sockaddr_in client_addr={
         .sin_addr.s_addr=INADDR_ANY,
@@ -58,7 +56,6 @@ int main(int argc,char **argv){
     client_p->client_fd= socket(AF_INET,SOCK_STREAM,0);//perror("socket");
     if(client_p->client_fd==-1)return EXIT_FAILURE;
 
-    // printf("CLIENT FD %ld",client_p->client_fd);
     check_error=bind(client_p->client_fd,(struct sockaddr*)&client_addr,sizeof client_addr);//perror("bind");
     if(check_error==-1)return EXIT_FAILURE;
 
@@ -77,17 +74,12 @@ int main(int argc,char **argv){
 
     pthread_t thread_snd;
     pthread_t thread_rcv;
-    // int* parametre_thread_snd[50];
-    // parametre_thread_snd[0]=client_fd;
-    // parametre_thread_snd[1]=pseudo;
 
     pthread_create(&thread_rcv,NULL,thread_recv,(void*) client_p);
     pthread_create(&thread_snd,NULL,thread_send,(void*) client_p);
 
-    // char tab_commande[TAILLE_MAX_COMMANDE];memset(tab_commande,0,TAILLE_MAX_COMMANDE);
-    // fgets(tab_commande,TAILLE_MAX_COMMANDE,stdin);
-    int check = pthread_join(thread_rcv,NULL);
-    if (check==0)
+    int wait_end_of_thread_recv = pthread_join(thread_rcv,NULL);
+    if (wait_end_of_thread_recv==0)
     {
         pthread_cancel(thread_snd);
     }

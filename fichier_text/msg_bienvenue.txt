@@ -1,6 +1,6 @@
 ###################### TCHAT ######################################
 
-Bienvenue, %s !
+Bienvenue !
 
 Voici la liste des commandes :
 

@@ -367,7 +367,7 @@ void * recv_thread(void* parametre_thread ){
                     int check_salon_exist=0;
                     if (parametre_thread_recv->clients_body[real_ID_client].check_menu_or_salon==DANS_UN_SALON)
                     {
-                        send(client_fd,"\n\n<SERVER> : Vous êtes déjà dans un salon.\nVeuillez quitter ce salon pour en rejoindre un autre\n\n",101,0);
+                        send(client_fd,"<SERVER> : Vous êtes déjà dans un salon.\nVeuillez quitter ce salon pour en rejoindre un autre\n\n",101,0);
                     }
                     else{
                         for (int i = 0; i < nombre_salon_en_ligne; i++)
@@ -387,7 +387,7 @@ void * recv_thread(void* parametre_thread ){
                         else if (check_salon_exist==1)
                         {
                             char msg_send[2000];memset(msg_send,0,2000);
-                            sprintf(msg_send,"\n<SERVER> : Vous avez rejoins le salon %s. Tapez \"exit\" pour quitter ce salon et revenir au menu\n\n",arg_commande[2]);
+                            sprintf(msg_send,"<SERVER> : Vous avez rejoins le salon %s. Tapez \"exit\" pour quitter ce salon et revenir au menu\n\n",arg_commande[2]);
                             send(client_fd,msg_send,strlen(msg_send),0);
                             memset(msg_send,0,2000);
                             sprintf(msg_send,"<SERVER> : %s a rejoin le salon %s.\n",parametre_thread_recv->clients_body[real_ID_client].pseudo,arg_commande[2]);
@@ -407,7 +407,7 @@ void * recv_thread(void* parametre_thread ){
                     strcpy(parametre_thread_recv->clients_body[real_ID_client].nom_salon,"world");
                     parametre_thread_recv->clients_body[real_ID_client].check_menu_or_salon=DANS_UN_SALON;
                     char msg_send[2000];memset(msg_send,0,2000);
-                    sprintf(msg_send,"\n<SERVER> : Vous avez rejoins le salon %s. Tapez \"exit\" pour quitter ce salon et revenir au menu\n\n",arg_commande[1]);
+                    sprintf(msg_send,"<SERVER> : Vous avez rejoins le salon %s. Tapez \"exit\" pour quitter ce salon et revenir au menu\n\n",arg_commande[1]);
                     send(client_fd,msg_send,strlen(msg_send),0);
                     memset(msg_send,0,2000);
                     sprintf(msg_send,"<SERVER> : %s a rejoin le salon %s.\n",parametre_thread_recv->clients_body[real_ID_client].pseudo,arg_commande[1]);
@@ -563,9 +563,7 @@ void * recv_thread(void* parametre_thread ){
             case ERROR:
                 send(client_fd,"<SERVER> : Veuillez entrer une commande valide\n",48,0);
                 break;            
-            // case DECONNECTION:
-                
-            //     break;
+
             default:
             
                 break;
